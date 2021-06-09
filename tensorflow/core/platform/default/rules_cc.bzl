@@ -7,10 +7,10 @@ load(
     _cc_library = "cc_library",
     _cc_test = "cc_test",
 )
-load(
-    "@rules_cc//examples:experimental_cc_shared_library.bzl",
-    _cc_shared_library = "cc_shared_library",
-)
+#load(
+#    "@rules_cc//examples:experimental_cc_shared_library.bzl",
+#    _cc_shared_library = "cc_shared_library",
+#)
 
 cc_binary = _cc_binary
 cc_import = _cc_import
