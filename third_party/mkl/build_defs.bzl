@@ -1,4 +1,5 @@
-"""Starlark macros for MKL.
+# -*- Python -*-
+"""Skylark macros for MKL.
 
 if_mkl is a conditional to check if we are building with MKL.
 if_mkl_ml is a conditional to check if we are building with MKL-ML.
@@ -15,26 +16,17 @@ mkl_repository depends on the following environment variables:
 _TF_MKL_ROOT = "TF_MKL_ROOT"
 
 def if_mkl(if_true, if_false = []):
-    """Shorthand for select()'ing on whether we're building with oneDNN.
-
-      OneDNN gets built if we are building on platforms that support oneDNN
-      (x86 linux/windows) or if specifcially configured to use oneDNN.
+    """Shorthand for select()'ing on whether we're building with MKL.
 
     Args:
-      if_true: expression to evaluate if building with oneDNN.
-      if_false: expression to evaluate if building without oneDNN.
+      if_true: expression to evaluate if building with MKL.
+      if_false: expression to evaluate if building without MKL.
 
     Returns:
       a select evaluating to either if_true or if_false as appropriate.
-
-    TODO(intel-tf):
-      the first "if_true" line is kept because non-x86 platforms (e.g., ARM)
-      may need it. It may be deleted in future with refactoring.
     """
     return select({
-        "@org_tensorflow//third_party/mkl:build_with_mkl_aarch64": if_true,
-        "@org_tensorflow//tensorflow:linux_x86_64": if_true,
-        "@org_tensorflow//tensorflow:windows": if_true,
+        str(Label("//third_party/mkl:build_with_mkl")): if_true,
         "//conditions:default": if_false,
     })
 
@@ -50,8 +42,23 @@ def if_mkl_ml(if_true, if_false = []):
       a select evaluating to either if_true or if_false as appropriate.
     """
     return select({
-        "@org_tensorflow//third_party/mkl_dnn:build_with_mkl_opensource": if_false,
-        "@org_tensorflow//third_party/mkl:build_with_mkl": if_true,
+        str(Label("//third_party/mkl_dnn:build_with_mkl_dnn_only")): if_false,
+        str(Label("//third_party/mkl:build_with_mkl")): if_true,
+        "//conditions:default": if_false,
+    })
+
+def if_mkl_ml_only(if_true, if_false = []):
+    """Shorthand for select()'ing on whether we're building with MKL-ML only.
+
+    Args:
+      if_true: expression to evaluate if building with MKL-ML only.
+      if_false: expression to evaluate if building without MKL, or with MKL-DNN.
+
+    Returns:
+      a select evaluating to either if_true or if_false as appropriate.
+    """
+    return select({
+        str(Label("//third_party/mkl:build_with_mkl_ml_only")): if_true,
         "//conditions:default": if_false,
     })
 
@@ -68,7 +75,7 @@ def if_mkl_lnx_x64(if_true, if_false = []):
       a select evaluating to either if_true or if_false as appropriate.
     """
     return select({
-        "@org_tensorflow//third_party/mkl:build_with_mkl_lnx_x64": if_true,
+        str(Label("//third_party/mkl:build_with_mkl_lnx_x64")): if_true,
         "//conditions:default": if_false,
     })
 
@@ -85,25 +92,26 @@ def if_enable_mkl(if_true, if_false = []):
       A select evaluating to either if_true or if_false as appropriate.
     """
     return select({
-        "@org_tensorflow//third_party/mkl:enable_mkl": if_true,
+        str(Label("//third_party/mkl:enable_mkl")): if_true,
         "//conditions:default": if_false,
     })
 
 def mkl_deps():
-    """Returns the correct set of oneDNN library dependencies.
+    """Shorthand for select() to pull in the correct set of MKL library deps.
 
-      Shorthand for select() to pull in the correct set of oneDNN library deps
-      depending on the platform. x86 Linux/Windows with or without --config=mkl
-      will always build with oneDNN library.
+    Can pull in MKL-ML, MKL-DNN, both, or neither depending on config settings.
 
     Returns:
       a select evaluating to a list of library dependencies, suitable for
       inclusion in the deps attribute of rules.
     """
     return select({
-        "@org_tensorflow//third_party/mkl:build_with_mkl_aarch64": ["@mkl_dnn_acl_compatible//:mkl_dnn_acl"],
-        "@org_tensorflow//tensorflow:linux_x86_64": ["@mkl_dnn_v1//:mkl_dnn"],
-        "@org_tensorflow//tensorflow:windows": ["@mkl_dnn_v1//:mkl_dnn"],
+        str(Label("//third_party/mkl_dnn:build_with_mkl_dnn_only")): ["@mkl_dnn"],
+        str(Label("//third_party/mkl:build_with_mkl_ml_only")): ["//third_party/mkl:intel_binary_blob"],
+        str(Label("//third_party/mkl:build_with_mkl")): [
+            "//third_party/mkl:intel_binary_blob",
+            "@mkl_dnn",
+        ],
         "//conditions:default": [],
     })
 
