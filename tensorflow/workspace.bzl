@@ -1,12 +1,12 @@
 # TensorFlow external dependencies that can be loaded in WORKSPACE files - satheesh.
 
-load("//third_party/gpus:cuda_configure.bzl", "cuda_configure")
-load("//third_party/sycl:sycl_configure.bzl", "sycl_configure")
+#load("//third_party/gpus:cuda_configure.bzl", "cuda_configure")
+#load("//third_party/sycl:sycl_configure.bzl", "sycl_configure")
 load("//third_party/mkl:build_defs.bzl", "mkl_repository")
 load("@io_bazel_rules_closure//closure/private:java_import_external.bzl",
      "java_import_external")
 load("@io_bazel_rules_closure//closure:defs.bzl", "filegroup_external")
-load("//third_party/py:python_configure.bzl", "python_configure")
+#load("//third_party/py:python_configure.bzl", "python_configure")
 load("//third_party/toolchains/cpus/arm:arm_compiler_configure.bzl",
      "arm_compiler_configure")
 
@@ -159,9 +159,9 @@ def tf_workspace(path_prefix="", tf_repo_name=""):
   # files, in case the parsing of those build files depends on the bazel
   # version we require here.
   check_bazel_version_at_least("0.5.4")
-  cuda_configure(name="local_config_cuda")
-  sycl_configure(name="local_config_sycl")
-  python_configure(name="local_config_python")
+  #cuda_configure(name="local_config_cuda")
+  #sycl_configure(name="local_config_sycl")
+  #python_configure(name="local_config_python")
 
   # Point //external/local_config_arm_compiler to //external/arm_compiler
   arm_compiler_configure(
